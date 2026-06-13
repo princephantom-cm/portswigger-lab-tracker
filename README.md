@@ -16,38 +16,39 @@ I'm Prince — a self-taught offensive security professional based in Mumbai, eJ
 
 ## Writeups
 
-Topic-wise notes on patterns, key learnings, and real-world relevance — added as topics are completed.
+Topic-wise notes on patterns, key learnings, and real-world relevance — added as topics are completed. Linked items below are live; the rest will be linked as each topic is finished.
 
-- `[Access Control](writeups/access-control.md)`
-- `writeups/business-logic/`
-- `writeups/ssrf/`
-- `writeups/authentication/`
-- `writeups/api-testing/`
-- `writeups/race-conditions/`
-- `writeups/csrf/`
-- `writeups/xss/`
-- `writeups/file-upload/`
-- `writeups/cors/`
-- `writeups/information-disclosure/`
-- `writeups/sqli/`
-- `writeups/path-traversal/`
-- `writeups/command-injection/`
-- `writeups/xxe/`
-- `writeups/nosql-injection/`
-- `writeups/clickjacking/`
-- `writeups/dom-based/`
-- `writeups/websockets/`
-- `writeups/jwt/`
-- `writeups/oauth/`
-- `writeups/graphql/`
-- `writeups/ssti/`
-- `writeups/deserialization/`
-- `writeups/host-header/`
-- `writeups/request-smuggling/`
-- `writeups/cache-poisoning/`
-- `writeups/prototype-pollution/`
-- `writeups/web-llm-attacks/`
+- [Access Control & IDOR](writeups/access-control.md) ✅
+- Business Logic Vulnerabilities
+- SSRF
+- Authentication
+- API Testing
+- Race Conditions
+- CSRF
+- XSS
+- File Upload
+- CORS
+- Information Disclosure
+- SQL Injection
+- Path Traversal
+- OS Command Injection
+- XXE Injection
+- NoSQL Injection
+- Clickjacking
+- DOM-Based Vulnerabilities
+- WebSockets
+- JWT Attacks
+- OAuth Authentication
+- GraphQL API Vulnerabilities
+- Server-Side Template Injection
+- Insecure Deserialization
+- HTTP Host Header Attacks
+- HTTP Request Smuggling
+- Web Cache Poisoning
+- Prototype Pollution
+- Web LLM Attacks
 
 ---
 
-📌 Following this journey on [https://www.linkedin.com/in/prince-dubey-237a64366/](#) — weekly updates with key takeaways from each topic.
+📌 Following this journey on Linkedin(https://www.linkedin.com/in/prince-dubey-237a64366/) — weekly updates with key takeaways from each topic.
+📌📌 Following this journey on LinkedIn — weekly updates with key takeaways from each topic. Following this journey on LinkedIn — weekly updates with key takeaways from each topic.
