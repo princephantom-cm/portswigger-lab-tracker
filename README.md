@@ -18,7 +18,7 @@ I'm Prince — a self-taught offensive security professional based in Mumbai, eJ
 
 Topic-wise notes on patterns, key learnings, and real-world relevance — added as topics are completed.
 
-- `writeups/access-control.md`
+- `[Access Control](writeups/access-control.md)`
 - `writeups/business-logic/`
 - `writeups/ssrf/`
 - `writeups/authentication/`
