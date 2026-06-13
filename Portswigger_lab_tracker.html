@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug Bounty Lab Tracker — Prince</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
+  --border:#2a2a2a;--border2:#333;
+  --text:#e8e8e8;--text2:#999;--text3:#444;
+  --green:#00d97e;--red:#ff4d4d;--amber:#f59e0b;--blue:#3b9eff;--purple:#a78bfa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:2rem 1rem}
+.container{max-width:820px;margin:0 auto}
+.top-header{margin-bottom:2rem}
+.top-header h1{font-size:24px;font-weight:700;letter-spacing:-0.5px}
+.top-header h1 span{color:var(--green)}
+.top-header p{font-size:13px;color:var(--text2);margin-top:5px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center}
+.stat-num{font-size:26px;font-weight:700}
+.stat-num.green{color:var(--green)}
+.stat-label{font-size:11px;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px}
+.overall-bar{margin-bottom:2rem}
+.bar-label-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px}
+.bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.bar-fill{height:100%;background:var(--green);border-radius:3px;transition:width 0.4s}
+.filter-row{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:5px 14px;border-radius:20px;cursor:pointer;transition:all 0.15s}
+.filter-btn:hover,.filter-btn.active{background:var(--bg4);border-color:var(--border2);color:var(--text)}
+.filter-btn.active{border-color:var(--green);color:var(--green)}
+.section{margin-bottom:10px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg2)}
+.section.hidden{display:none}
+.section.all-done .section-header{border-left:3px solid var(--green)}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;cursor:pointer;user-select:none;background:var(--bg3);transition:background 0.15s}
+.section-header:hover{background:var(--bg4)}
+.sec-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sec-title{font-size:14px;font-weight:600}
+.badge{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase}
+.b-critical{background:#3d0000;color:#ff6b6b;border:1px solid #5c0000}
+.b-high{background:#2d1a00;color:#f59e0b;border:1px solid #4a2d00}
+.b-medium{background:#001a3d;color:#60a5fa;border:1px solid #002d5c}
+.b-advanced{background:#1a0040;color:#c084fc;border:1px solid #2d006b}
+.sec-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.sec-count{font-size:12px;color:var(--text2)}
+.sec-prog{width:60px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
+.sec-prog-fill{height:100%;background:var(--green);border-radius:2px;transition:width 0.3s}
+.chevron{color:var(--text3);font-size:18px;transition:transform 0.2s;line-height:1}
+.chevron.open{transform:rotate(180deg)}
+.labs{display:none}
+.labs.open{display:block}
+.lab-row{display:flex;align-items:flex-start;gap:12px;padding:10px 18px;cursor:pointer;border-top:1px solid var(--border);transition:background 0.12s}
+.lab-row:hover{background:var(--bg3)}
+.lab-row.done .lab-name{color:var(--text3);text-decoration:line-through}
+.lab-row.done .lab-tag{color:var(--text3)}
+.cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:var(--bg)}
+.cb.checked{background:var(--green);border-color:var(--green)}
+.cb svg{display:none}
+.cb.checked svg{display:block}
+.lab-name{font-size:13px;color:var(--text);line-height:1.45}
+.lab-tag{font-size:11px;color:var(--text2);margin-top:2px}
+.diff-tag{font-size:10px;padding:1px 7px;border-radius:10px;margin-left:6px;font-weight:500;vertical-align:middle}
+.d-ap{background:#003d20;color:#00d97e}
+.d-pr{background:#2d1a00;color:#f59e0b}
+.d-ex{background:#3d0000;color:#ff6b6b}
+.reset-row{text-align:right;margin-top:1.5rem;padding-bottom:2rem}
+.reset-btn{background:none;border:1px solid var(--border2);color:var(--text2);font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.15s}
+.reset-btn:hover{border-color:var(--red);color:var(--red)}
+@media(max-width:500px){.stats{grid-template-columns:repeat(2,1fr)}.sec-prog{display:none}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="top-header">
+  <h1>Bug Bounty <span>Lab Tracker</span></h1>
+  <p>PortSwigger Web Academy — exact lab names, bug bounty findability order. Labs prioritized by real-world findability, not CVSS severity.</p>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-num green" id="s-done">0</div><div class="stat-label">Completed</div></div>
+  <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total Labs</div></div>
+  <div class="stat"><div class="stat-num" id="s-pct">0%</div><div class="stat-label">Progress</div></div>
+  <div class="stat"><div class="stat-num" id="s-topics">0</div><div class="stat-label">Topics Done</div></div>
+</div>
+<div class="overall-bar">
+  <div class="bar-label-row"><span>Overall progress</span><span id="bar-label">0 / 0 labs</span></div>
+  <div class="bar-track"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
+</div>
+<div class="filter-row">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" onclick="setFilter('critical',this)">🔴 Critical</button>
+  <button class="filter-btn" onclick="setFilter('high',this)">🟡 High</button>
+  <button class="filter-btn" onclick="setFilter('medium',this)">🔵 Medium</button>
+  <button class="filter-btn" onclick="setFilter('advanced',this)">🟣 Advanced</button>
+  <button class="filter-btn" onclick="setFilter('incomplete',this)">Incomplete only</button>
+</div>
+<div id="sections"></div>
+<div class="reset-row"><button class="reset-btn" onclick="resetAll()">Reset all progress</button></div>
+</div>
+<script>
+// d: "ap"=Apprentice, "pr"=Practitioner, "ex"=Expert
+const DATA=[
+  {id:"ac",title:"Access Control & IDOR",severity:"critical",labs:[
+    {id:"ac1",name:"Unprotected admin functionality",d:"ap"},
+    {id:"ac2",name:"Unprotected admin functionality with unpredictable URL",d:"ap"},
+    {id:"ac3",name:"User role controlled by request parameter",d:"ap"},
+    {id:"ac4",name:"User role can be modified in user profile",d:"ap"},
+    {id:"ac5",name:"User ID controlled by request parameter",d:"ap"},
+    {id:"ac6",name:"User ID controlled by request parameter, with unpredictable user IDs",d:"ap"},
+    {id:"ac7",name:"User ID controlled by request parameter with data leakage in redirect",d:"ap"},
+    {id:"ac8",name:"User ID controlled by request parameter with password disclosure",d:"ap"},
+    {id:"ac9",name:"Insecure direct object references",d:"ap"},
+    {id:"ac10",name:"URL-based access control can be circumvented",d:"pr"},
+    {id:"ac11",name:"Method-based access control can be circumvented",d:"pr"},
+    {id:"ac12",name:"Multi-step process with no access control on one step",d:"pr"},
+    {id:"ac13",name:"Referer-based access control",d:"pr"},
+  ]},
+  {id:"bl",title:"Business Logic Vulnerabilities",severity:"critical",labs:[
+    {id:"bl1",name:"Excessive trust in client-side controls",d:"ap"},
+    {id:"bl2",name:"High-level logic vulnerability",d:"ap"},
+    {id:"bl3",name:"Inconsistent security controls",d:"ap"},
+    {id:"bl4",name:"Flawed enforcement of business rules",d:"ap"},
+    {id:"bl5",name:"Low-level logic flaw",d:"pr"},
+    {id:"bl6",name:"Inconsistent handling of exceptional input",d:"pr"},
+    {id:"bl7",name:"Weak isolation on dual-use endpoint",d:"pr"},
+    {id:"bl8",name:"Insufficient workflow validation",d:"pr"},
+    {id:"bl9",name:"Authentication bypass via flawed state machine",d:"pr"},
+    {id:"bl10",name:"Infinite money logic flaw",d:"pr"},
+    {id:"bl11",name:"Authentication bypass via encryption oracle",d:"pr"},
+  ]},
+  {id:"ssrf",title:"Server-Side Request Forgery (SSRF)",severity:"critical",labs:[
+    {id:"ssrf1",name:"Basic SSRF against the local server",d:"ap"},
+    {id:"ssrf2",name:"Basic SSRF against another back-end system",d:"ap"},
+    {id:"ssrf3",name:"SSRF with blacklist-based input filter",d:"pr"},
+    {id:"ssrf4",name:"SSRF with filter bypass via open redirection vulnerability",d:"pr"},
+    {id:"ssrf5",name:"Blind SSRF with out-of-band detection",d:"pr"},
+    {id:"ssrf6",name:"SSRF with whitelist-based input filter",d:"ex"},
+    {id:"ssrf7",name:"Blind SSRF with Shellshock exploitation",d:"ex"},
+  ]},
+  {id:"auth",title:"Authentication Vulnerabilities",severity:"critical",labs:[
+    {id:"auth1",name:"Username enumeration via different responses",d:"ap"},
+    {id:"auth2",name:"2FA simple bypass",d:"ap"},
+    {id:"auth3",name:"Password reset broken logic",d:"ap"},
+    {id:"auth4",name:"Username enumeration via subtly different responses",d:"pr"},
+    {id:"auth5",name:"Username enumeration via response timing",d:"pr"},
+    {id:"auth6",name:"Broken brute-force protection, IP block",d:"pr"},
+    {id:"auth7",name:"Username enumeration via account lock",d:"pr"},
+    {id:"auth8",name:"2FA broken logic",d:"pr"},
+    {id:"auth9",name:"Brute-forcing a stay-logged-in cookie",d:"pr"},
+    {id:"auth10",name:"Offline password cracking",d:"pr"},
+    {id:"auth11",name:"Password reset poisoning via middleware",d:"pr"},
+    {id:"auth12",name:"Password brute-force via password change",d:"pr"},
+    {id:"auth13",name:"Broken brute-force protection, multiple credentials per request",d:"ex"},
+    {id:"auth14",name:"2FA bypass using a brute-force attack",d:"ex"},
+  ]},
+  {id:"api",title:"API Testing",severity:"critical",labs:[
+    {id:"api1",name:"Exploiting an API endpoint using documentation",d:"ap"},
+    {id:"api2",name:"Exploiting unused API endpoint",d:"ap"},
+    {id:"api3",name:"Finding and exploiting an unused API endpoint",d:"pr"},
+    {id:"api4",name:"Exploiting a mass assignment vulnerability",d:"pr"},
+    {id:"api5",name:"Exploiting server-side parameter pollution in a query string",d:"pr"},
+  ]},
+  {id:"rc",title:"Race Conditions",severity:"critical",labs:[
+    {id:"rc1",name:"Limit overrun race conditions",d:"ap"},
+    {id:"rc2",name:"Bypassing rate limits via race conditions",d:"pr"},
+    {id:"rc3",name:"Multi-endpoint race conditions",d:"pr"},
+    {id:"rc4",name:"Single-endpoint race conditions",d:"pr"},
+    {id:"rc5",name:"Partial construction race conditions",d:"ex"},
+    {id:"rc6",name:"Exploiting time-sensitive vulnerabilities",d:"ex"},
+  ]},
+  {id:"csrf",title:"Cross-Site Request Forgery (CSRF)",severity:"high",labs:[
+    {id:"csrf1",name:"CSRF vulnerability with no defenses",d:"ap"},
+    {id:"csrf2",name:"CSRF where token validation depends on request method",d:"pr"},
+    {id:"csrf3",name:"CSRF where token validation depends on token being present",d:"pr"},
+    {id:"csrf4",name:"CSRF where token is not tied to user session",d:"pr"},
+    {id:"csrf5",name:"CSRF where token is tied to non-session cookie",d:"pr"},
+    {id:"csrf6",name:"CSRF where token is duplicated in cookie",d:"pr"},
+    {id:"csrf7",name:"CSRF where Referer validation depends on header being present",d:"pr"},
+    {id:"csrf8",name:"CSRF with broken Referer validation",d:"pr"},
+  ]},
+  {id:"xss",title:"Cross-Site Scripting (XSS)",severity:"high",labs:[
+    {id:"xss1",name:"Reflected XSS into HTML context with nothing encoded",d:"ap"},
+    {id:"xss2",name:"Stored XSS into HTML context with nothing encoded",d:"ap"},
+    {id:"xss3",name:"DOM XSS in document.write sink using source location.search",d:"ap"},
+    {id:"xss4",name:"DOM XSS in innerHTML sink using source location.search",d:"ap"},
+    {id:"xss5",name:"DOM XSS in jQuery anchor href attribute sink using location.search source",d:"ap"},
+    {id:"xss6",name:"DOM XSS in jQuery selector sink using a hashchange event",d:"ap"},
+    {id:"xss7",name:"Reflected XSS into attribute with angle brackets HTML-encoded",d:"ap"},
+    {id:"xss8",name:"Stored XSS into anchor href attribute with double quotes HTML-encoded",d:"ap"},
+    {id:"xss9",name:"Reflected XSS into a JavaScript string with angle brackets HTML encoded",d:"ap"},
+    {id:"xss10",name:"DOM XSS in document.write sink using source location.search inside a select element",d:"pr"},
+    {id:"xss11",name:"DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded",d:"pr"},
+    {id:"xss12",name:"Reflected DOM XSS",d:"pr"},
+    {id:"xss13",name:"Stored DOM XSS",d:"pr"},
+    {id:"xss14",name:"Exploiting cross-site scripting to steal cookies",d:"pr"},
+    {id:"xss15",name:"Exploiting cross-site scripting to capture passwords",d:"pr"},
+    {id:"xss16",name:"Exploiting XSS to perform CSRF",d:"pr"},
+    {id:"xss17",name:"Reflected XSS into HTML context with most tags and attributes blocked",d:"pr"},
+    {id:"xss18",name:"Reflected XSS into HTML context with all tags blocked except custom ones",d:"pr"},
+    {id:"xss19",name:"Reflected XSS with some SVG markup allowed",d:"pr"},
+    {id:"xss20",name:"Reflected XSS in canonical link tag",d:"pr"},
+    {id:"xss21",name:"Reflected XSS into a JavaScript string with single quote and backslash escaped",d:"pr"},
+    {id:"xss22",name:"Reflected XSS into a JavaScript string with angle brackets and double quotes HTML-encoded and single quotes escaped",d:"pr"},
+    {id:"xss23",name:"Stored XSS into onclick event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped",d:"pr"},
+    {id:"xss24",name:"Reflected XSS into a template literal with angle brackets, single, double quotes, backslash and backticks Unicode-escaped",d:"pr"},
+    {id:"xss25",name:"Reflected XSS with event handlers and href attributes blocked",d:"ex"},
+    {id:"xss26",name:"Reflected XSS in a JavaScript URL with some characters blocked",d:"ex"},
+    {id:"xss27",name:"Reflected XSS with AngularJS sandbox escape without strings",d:"ex"},
+    {id:"xss28",name:"Reflected XSS with AngularJS sandbox escape and CSP",d:"ex"},
+    {id:"xss29",name:"Reflected XSS protected by very strict CSP, with dangling markup attack",d:"ex"},
+    {id:"xss30",name:"Reflected XSS protected by CSP, with CSP bypass",d:"ex"},
+  ]},
+  {id:"fu",title:"File Upload Vulnerabilities",severity:"high",labs:[
+    {id:"fu1",name:"Remote code execution via web shell upload",d:"ap"},
+    {id:"fu2",name:"Web shell upload via Content-Type restriction bypass",d:"ap"},
+    {id:"fu3",name:"Web shell upload via path traversal",d:"pr"},
+    {id:"fu4",name:"Web shell upload via extension blacklist bypass",d:"pr"},
+    {id:"fu5",name:"Web shell upload via obfuscated file extension",d:"pr"},
+    {id:"fu6",name:"Remote code execution via polyglot web shell upload",d:"pr"},
+    {id:"fu7",name:"Web shell upload via race condition",d:"ex"},
+  ]},
+  {id:"cors",title:"Cross-Origin Resource Sharing (CORS)",severity:"high",labs:[
+    {id:"cors1",name:"CORS vulnerability with basic origin reflection",d:"ap"},
+    {id:"cors2",name:"CORS vulnerability with trusted null origin",d:"ap"},
+    {id:"cors3",name:"CORS vulnerability with trusted insecure protocols",d:"pr"},
+    {id:"cors4",name:"CORS vulnerability with internal network pivot attack",d:"ex"},
+  ]},
+  {id:"info",title:"Information Disclosure",severity:"high",labs:[
+    {id:"info1",name:"Information disclosure in error messages",d:"ap"},
+    {id:"info2",name:"Information disclosure on debug page",d:"ap"},
+    {id:"info3",name:"Source code disclosure via backup files",d:"ap"},
+    {id:"info4",name:"Authentication bypass via information disclosure",d:"ap"},
+    {id:"info5",name:"Information disclosure in version control history",d:"pr"},
+  ]},
+  {id:"sqli",title:"SQL Injection",severity:"medium",labs:[
+    {id:"sqli1",name:"SQL injection vulnerability in WHERE clause allowing retrieval of hidden data",d:"ap"},
+    {id:"sqli2",name:"SQL injection vulnerability allowing login bypass",d:"ap"},
+    {id:"sqli3",name:"SQL injection UNION attack, determining the number of columns returned by the query",d:"pr"},
+    {id:"sqli4",name:"SQL injection UNION attack, finding a column containing text",d:"pr"},
+    {id:"sqli5",name:"SQL injection UNION attack, retrieving data from other tables",d:"pr"},
+    {id:"sqli6",name:"SQL injection UNION attack, retrieving multiple values in a single column",d:"pr"},
+    {id:"sqli7",name:"SQL injection attack, querying the database type and version on Oracle",d:"pr"},
+    {id:"sqli8",name:"SQL injection attack, querying the database type and version on MySQL and Microsoft",d:"pr"},
+    {id:"sqli9",name:"SQL injection attack, listing the database contents on non-Oracle databases",d:"pr"},
+    {id:"sqli10",name:"SQL injection attack, listing the database contents on Oracle",d:"pr"},
+    {id:"sqli11",name:"Blind SQL injection with conditional responses",d:"pr"},
+    {id:"sqli12",name:"Blind SQL injection with conditional errors",d:"pr"},
+    {id:"sqli13",name:"Blind SQL injection with time delays",d:"pr"},
+    {id:"sqli14",name:"Blind SQL injection with time delays and information retrieval",d:"pr"},
+    {id:"sqli15",name:"Blind SQL injection with out-of-band interaction",d:"pr"},
+    {id:"sqli16",name:"Blind SQL injection with out-of-band data exfiltration",d:"pr"},
+    {id:"sqli17",name:"Visible error-based SQL injection",d:"pr"},
+    {id:"sqli18",name:"SQL injection with filter bypass via XML encoding",d:"pr"},
+  ]},
+  {id:"pt",title:"Path Traversal",severity:"medium",labs:[
+    {id:"pt1",name:"File path traversal, simple case",d:"ap"},
+    {id:"pt2",name:"File path traversal, traversal sequences blocked with absolute path bypass",d:"pr"},
+    {id:"pt3",name:"File path traversal, traversal sequences stripped non-recursively",d:"pr"},
+    {id:"pt4",name:"File path traversal, traversal sequences stripped with superfluous URL-decode",d:"pr"},
+    {id:"pt5",name:"File path traversal, validation of start of path",d:"pr"},
+    {id:"pt6",name:"File path traversal, validation of file extension with null byte bypass",d:"pr"},
+  ]},
+  {id:"ci",title:"OS Command Injection",severity:"medium",labs:[
+    {id:"ci1",name:"OS command injection, simple case",d:"ap"},
+    {id:"ci2",name:"Blind OS command injection with time delays",d:"pr"},
+    {id:"ci3",name:"Blind OS command injection with output redirection",d:"pr"},
+    {id:"ci4",name:"Blind OS command injection with out-of-band interaction",d:"pr"},
+    {id:"ci5",name:"Blind OS command injection with out-of-band data exfiltration",d:"pr"},
+  ]},
+  {id:"xxe",title:"XXE Injection",severity:"medium",labs:[
+    {id:"xxe1",name:"Exploiting XXE using external entities to retrieve files",d:"ap"},
+    {id:"xxe2",name:"Exploiting XXE to perform SSRF attacks",d:"ap"},
+    {id:"xxe3",name:"Blind XXE with out-of-band interaction",d:"pr"},
+    {id:"xxe4",name:"Blind XXE with out-of-band interaction via XML parameter entities",d:"pr"},
+    {id:"xxe5",name:"Exploiting blind XXE to exfiltrate data using a malicious external DTD",d:"pr"},
+    {id:"xxe6",name:"Exploiting blind XXE to retrieve data via error messages",d:"pr"},
+    {id:"xxe7",name:"Exploiting XInclude to retrieve files",d:"pr"},
+    {id:"xxe8",name:"Exploiting XXE via image file upload",d:"pr"},
+    {id:"xxe9",name:"Exploiting XXE to retrieve data by repurposing a local DTD",d:"ex"},
+  ]},
+  {id:"nosql",title:"NoSQL Injection",severity:"medium",labs:[
+    {id:"nosql1",name:"Detecting NoSQL injection",d:"ap"},
+    {id:"nosql2",name:"Exploiting NoSQL operator injection to bypass authentication",d:"ap"},
+    {id:"nosql3",name:"Exploiting NoSQL injection to extract data",d:"pr"},
+    {id:"nosql4",name:"Exploiting NoSQL operator injection to extract unknown fields",d:"pr"},
+  ]},
+  {id:"click",title:"Clickjacking",severity:"medium",labs:[
+    {id:"click1",name:"Basic clickjacking with CSRF token protection",d:"ap"},
+    {id:"click2",name:"Clickjacking with form input data prefilled from a URL parameter",d:"ap"},
+    {id:"click3",name:"Clickjacking with a frame buster script",d:"ap"},
+    {id:"click4",name:"Exploiting clickjacking vulnerability to trigger DOM-based XSS",d:"pr"},
+    {id:"click5",name:"Multistep clickjacking",d:"pr"},
+  ]},
+  {id:"dom",title:"DOM-Based Vulnerabilities",severity:"medium",labs:[
+    {id:"dom1",name:"DOM XSS using web messages",d:"pr"},
+    {id:"dom2",name:"DOM XSS using web messages and a JavaScript URL",d:"pr"},
+    {id:"dom3",name:"DOM XSS using web messages and JSON.parse",d:"pr"},
+    {id:"dom4",name:"DOM-based open redirection",d:"pr"},
+    {id:"dom5",name:"DOM-based cookie manipulation",d:"pr"},
+    {id:"dom6",name:"Exploiting DOM clobbering to enable XSS",d:"ex"},
+    {id:"dom7",name:"Clobbering DOM attributes to bypass HTML filters",d:"ex"},
+  ]},
+  {id:"ws",title:"WebSockets",severity:"medium",labs:[
+    {id:"ws1",name:"Manipulating WebSocket messages to exploit vulnerabilities",d:"ap"},
+    {id:"ws2",name:"Manipulating the WebSocket handshake to exploit vulnerabilities",d:"pr"},
+    {id:"ws3",name:"Cross-site WebSocket hijacking",d:"pr"},
+  ]},
+  {id:"jwt",title:"JWT Attacks",severity:"advanced",labs:[
+    {id:"jwt1",name:"JWT authentication bypass via unverified signature",d:"ap"},
+    {id:"jwt2",name:"JWT authentication bypass via flawed signature verification",d:"ap"},
+    {id:"jwt3",name:"JWT authentication bypass via weak signing secret",d:"pr"},
+    {id:"jwt4",name:"JWT authentication bypass via jwk header injection",d:"pr"},
+    {id:"jwt5",name:"JWT authentication bypass via jku header injection",d:"pr"},
+    {id:"jwt6",name:"JWT authentication bypass via kid header path traversal",d:"pr"},
+    {id:"jwt7",name:"JWT authentication bypass via algorithm confusion",d:"ex"},
+    {id:"jwt8",name:"JWT authentication bypass via algorithm confusion with no exposed key",d:"ex"},
+  ]},
+  {id:"oauth",title:"OAuth Authentication",severity:"advanced",labs:[
+    {id:"oauth1",name:"Authentication bypass via OAuth implicit flow",d:"ap"},
+    {id:"oauth2",name:"Forced OAuth profile linking",d:"pr"},
+    {id:"oauth3",name:"OAuth account hijacking via redirect_uri",d:"pr"},
+    {id:"oauth4",name:"Stealing OAuth access tokens via an open redirect",d:"pr"},
+    {id:"oauth5",name:"SSRF via OpenID dynamic client registration",d:"pr"},
+    {id:"oauth6",name:"Stealing OAuth access tokens via a proxy page",d:"ex"},
+  ]},
+  {id:"gql",title:"GraphQL API Vulnerabilities",severity:"advanced",labs:[
+    {id:"gql1",name:"Accessing private GraphQL posts",d:"ap"},
+    {id:"gql2",name:"Accidental exposure of private GraphQL fields",d:"ap"},
+    {id:"gql3",name:"Finding a hidden GraphQL endpoint",d:"pr"},
+    {id:"gql4",name:"Bypassing GraphQL brute force protections",d:"pr"},
+    {id:"gql5",name:"Performing CSRF exploits over GraphQL",d:"pr"},
+  ]},
+  {id:"ssti",title:"Server-Side Template Injection (SSTI)",severity:"advanced",labs:[
+    {id:"ssti1",name:"Basic server-side template injection",d:"pr"},
+    {id:"ssti2",name:"Basic server-side template injection (code context)",d:"pr"},
+    {id:"ssti3",name:"Server-side template injection using documentation",d:"pr"},
+    {id:"ssti4",name:"Server-side template injection in an unknown language with a documented exploit",d:"pr"},
+    {id:"ssti5",name:"Server-side template injection with information disclosure via user-supplied objects",d:"pr"},
+    {id:"ssti6",name:"Server-side template injection in a sandboxed environment",d:"ex"},
+    {id:"ssti7",name:"Server-side template injection with a custom exploit",d:"ex"},
+  ]},
+  {id:"deser",title:"Insecure Deserialization",severity:"advanced",labs:[
+    {id:"deser1",name:"Modifying serialized objects",d:"ap"},
+    {id:"deser2",name:"Modifying serialized data types",d:"pr"},
+    {id:"deser3",name:"Using application functionality to exploit insecure deserialization",d:"pr"},
+    {id:"deser4",name:"Arbitrary object injection in PHP",d:"pr"},
+    {id:"deser5",name:"Exploiting Java deserialization with Apache Commons",d:"pr"},
+    {id:"deser6",name:"Exploiting PHP deserialization with a pre-built gadget chain",d:"pr"},
+    {id:"deser7",name:"Exploiting Ruby deserialization using a documented gadget chain",d:"pr"},
+    {id:"deser8",name:"Developing a custom gadget chain for Java deserialization",d:"ex"},
+    {id:"deser9",name:"Developing a custom gadget chain for PHP deserialization",d:"ex"},
+    {id:"deser10",name:"Using PHAR deserialization to deploy a custom gadget chain",d:"ex"},
+  ]},
+  {id:"host",title:"HTTP Host Header Attacks",severity:"advanced",labs:[
+    {id:"host1",name:"Basic password reset poisoning",d:"ap"},
+    {id:"host2",name:"Host header authentication bypass",d:"ap"},
+    {id:"host3",name:"Web cache poisoning via ambiguous requests",d:"pr"},
+    {id:"host4",name:"Routing-based SSRF",d:"pr"},
+    {id:"host5",name:"SSRF via flawed request parsing",d:"pr"},
+    {id:"host6",name:"Password reset poisoning via dangling markup",d:"ex"},
+  ]},
+  {id:"sm",title:"HTTP Request Smuggling",severity:"advanced",labs:[
+    {id:"sm1",name:"HTTP request smuggling, basic CL.TE vulnerability",d:"pr"},
+    {id:"sm2",name:"HTTP request smuggling, basic TE.CL vulnerability",d:"pr"},
+    {id:"sm3",name:"HTTP request smuggling, obfuscating the TE header",d:"pr"},
+    {id:"sm4",name:"HTTP request smuggling, confirming a CL.TE vulnerability via differential responses",d:"pr"},
+    {id:"sm5",name:"HTTP request smuggling, confirming a TE.CL vulnerability via differential responses",d:"pr"},
+    {id:"sm6",name:"Exploiting HTTP request smuggling to bypass front-end security controls, CL.TE vulnerability",d:"pr"},
+    {id:"sm7",name:"Exploiting HTTP request smuggling to bypass front-end security controls, TE.CL vulnerability",d:"pr"},
+    {id:"sm8",name:"Exploiting HTTP request smuggling to reveal front-end request rewriting",d:"pr"},
+    {id:"sm9",name:"Exploiting HTTP request smuggling to capture other users' requests",d:"pr"},
+    {id:"sm10",name:"Exploiting HTTP request smuggling to deliver reflected XSS",d:"pr"},
+    {id:"sm11",name:"Response queue poisoning via H2.TE request smuggling",d:"pr"},
+    {id:"sm12",name:"H2.CL request smuggling",d:"pr"},
+    {id:"sm13",name:"HTTP/2 request smuggling via CRLF injection",d:"pr"},
+    {id:"sm14",name:"HTTP/2 request splitting via CRLF injection",d:"pr"},
+    {id:"sm15",name:"Exploiting HTTP request smuggling to perform web cache poisoning",d:"ex"},
+    {id:"sm16",name:"Exploiting HTTP request smuggling to perform web cache deception",d:"ex"},
+    {id:"sm17",name:"Bypassing access controls via HTTP/2 request tunnelling",d:"ex"},
+    {id:"sm18",name:"Web cache poisoning via HTTP/2 request tunnelling",d:"ex"},
+  ]},
+  {id:"cache",title:"Web Cache Poisoning",severity:"advanced",labs:[
+    {id:"cache1",name:"Web cache poisoning with an unkeyed header",d:"pr"},
+    {id:"cache2",name:"Web cache poisoning with an unkeyed cookie",d:"pr"},
+    {id:"cache3",name:"Web cache poisoning with multiple headers",d:"pr"},
+    {id:"cache4",name:"Targeted web cache poisoning using an unknown header",d:"pr"},
+    {id:"cache5",name:"Web cache poisoning via an unkeyed query string",d:"pr"},
+    {id:"cache6",name:"Web cache poisoning via an unkeyed query parameter",d:"pr"},
+    {id:"cache7",name:"Parameter cloaking",d:"pr"},
+    {id:"cache8",name:"Web cache poisoning via a fat GET request",d:"pr"},
+    {id:"cache9",name:"URL normalization",d:"pr"},
+    {id:"cache10",name:"Web cache poisoning to exploit a DOM vulnerability via a cache with strict cacheability criteria",d:"ex"},
+    {id:"cache11",name:"Combining web cache poisoning vulnerabilities",d:"ex"},
+    {id:"cache12",name:"Cache key injection",d:"ex"},
+    {id:"cache13",name:"Internal cache poisoning",d:"ex"},
+  ]},
+  {id:"proto",title:"Prototype Pollution",severity:"advanced",labs:[
+    {id:"proto1",name:"DOM XSS via client-side prototype pollution",d:"pr"},
+    {id:"proto2",name:"DOM XSS via an alternative prototype pollution vector",d:"pr"},
+    {id:"proto3",name:"Client-side prototype pollution in third-party libraries",d:"pr"},
+    {id:"proto4",name:"Client-side prototype pollution via browser APIs",d:"pr"},
+    {id:"proto5",name:"Privilege escalation via server-side prototype pollution",d:"pr"},
+    {id:"proto6",name:"Detecting server-side prototype pollution without polluted property reflection",d:"pr"},
+    {id:"proto7",name:"Bypassing flawed input filters for server-side prototype pollution",d:"pr"},
+    {id:"proto8",name:"Remote code execution via server-side prototype pollution",d:"ex"},
+    {id:"proto9",name:"Exfiltrating sensitive data via server-side prototype pollution",d:"ex"},
+  ]},
+  {id:"llm",title:"Web LLM Attacks",severity:"advanced",labs:[
+    {id:"llm1",name:"Exploiting LLM APIs with excessive agency",d:"ap"},
+    {id:"llm2",name:"Exploiting vulnerabilities in LLM APIs",d:"pr"},
+    {id:"llm3",name:"Indirect prompt injection",d:"pr"},
+  ]},
+];
+
+let state={};
+try{const s=localStorage.getItem('bb_tracker_v4');if(s)state=JSON.parse(s);}catch(e){}
+let currentFilter='all';
+
+function save(){try{localStorage.setItem('bb_tracker_v4',JSON.stringify(state));}catch(e){}}
+function toggle(id){state[id]=!state[id];save();render();}
+function toggleSection(id){state['_open_'+id]=state['_open_'+id]===false;save();render();}
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+function resetAll(){if(confirm('Reset ALL progress? Cannot be undone.')){state={};save();render();}}
+
+function sectionVisible(sec,done,total){
+  if(currentFilter==='all')return true;
+  if(currentFilter==='incomplete')return done<total;
+  return sec.severity===currentFilter;
+}
+
+const dMap={ap:'ap',pr:'pr',ex:'ex'};
+const dLabel={ap:'Apprentice',pr:'Practitioner',ex:'Expert'};
+
+function render(){
+  let totalDone=0,totalAll=0,topicsDone=0;
+  const container=document.getElementById('sections');
+  container.innerHTML='';
+
+  DATA.forEach(sec=>{
+    const done=sec.labs.filter(l=>state[l.id]).length;
+    const total=sec.labs.length;
+    totalDone+=done;totalAll+=total;
+    if(done===total&&total>0)topicsDone++;
+    const pct=total>0?Math.round(done/total*100):0;
+    const isOpen=state['_open_'+sec.id]!==false;
+    const allDone=done===total&&total>0;
+    const visible=sectionVisible(sec,done,total);
+
+    const bMap={critical:'b-critical',high:'b-high',medium:'b-medium',advanced:'b-advanced'};
+    const bText={critical:'Critical',high:'High',medium:'Medium',advanced:'Advanced'};
+
+    const wrap=document.createElement('div');
+    wrap.className='section'+(allDone?' all-done':'')+(visible?'':' hidden');
+    wrap.innerHTML=`
+<div class="section-header" onclick="toggleSection('${sec.id}')">
+  <div class="sec-left">
+    <span class="sec-title">${sec.title}</span>
+    <span class="badge ${bMap[sec.severity]}">${bText[sec.severity]}</span>
+  </div>
+  <div class="sec-right">
+    <span class="sec-count">${done}/${total}</span>
+    <div class="sec-prog"><div class="sec-prog-fill" style="width:${pct}%"></div></div>
+    <span class="chevron${isOpen?' open':''}">&#8964;</span>
+  </div>
+</div>
+<div class="labs${isOpen?' open':''}">
+${sec.labs.map(l=>`
+<div class="lab-row${state[l.id]?' done':''}" onclick="toggle('${l.id}')">
+  <div class="cb${state[l.id]?' checked':''}">
+    <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+      <path d="M1 4L4 7.5L10 1" stroke="#0f0f0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div>
+    <div class="lab-name">${l.name}<span class="diff-tag d-${l.d}">${dLabel[l.d]}</span></div>
+  </div>
+</div>`).join('')}
+</div>`;
+    container.appendChild(wrap);
+  });
+
+  document.getElementById('s-done').textContent=totalDone;
+  document.getElementById('s-total').textContent=totalAll;
+  document.getElementById('s-pct').textContent=Math.round(totalDone/totalAll*100)+'%';
+  document.getElementById('s-topics').textContent=topicsDone;
+  document.getElementById('bar-fill').style.width=Math.round(totalDone/totalAll*100)+'%';
+  document.getElementById('bar-label').textContent=totalDone+' / '+totalAll+' labs';
+}
+render();
+</script>
+</body>
+</html>
