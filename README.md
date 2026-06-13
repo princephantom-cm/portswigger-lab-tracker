@@ -50,5 +50,4 @@ Topic-wise notes on patterns, key learnings, and real-world relevance — added 
 
 ---
 
-📌 Following this journey on Linkedin(https://www.linkedin.com/in/prince-dubey-237a64366/) — weekly updates with key takeaways from each topic.
-📌📌 Following this journey on LinkedIn — weekly updates with key takeaways from each topic. Following this journey on LinkedIn — weekly updates with key takeaways from each topic.
+📌 Following this journey on Linkedin(https://www.linkedin.com/in/prince-dubey-237a64366/) — weekly updates with key takeaways from each topic.📌
