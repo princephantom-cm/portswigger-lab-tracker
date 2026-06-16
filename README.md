@@ -1,6 +1,6 @@
 # PortSwigger Lab Tracker
 
-Tracking my progress through all PortSwigger Web Academy labs (263 labs) as part of my bug bounty preparation journey.
+Tracking my progress through all PortSwigger Web Academy labs (252 labs) as part of my bug bounty preparation journey.
 
 🔗 **Live tracker:** [https://princephantom-cm.github.io/portswigger-lab-tracker](https://princephantom-cm.github.io/portswigger-lab-tracker)
 
