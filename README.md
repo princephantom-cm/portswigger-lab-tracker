@@ -20,7 +20,7 @@ Topic-wise notes on patterns, key learnings, and real-world relevance — added 
 
 - [Access Control & IDOR](writeups/access-control.md) ✅
 - Business Logic Vulnerabilities
-- [SSRF](writeups/ssrf.md)✅
+- [SSRF](writeups/ssrf.md) ✅
 - Authentication
 - API Testing
 - Race Conditions
