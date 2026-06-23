@@ -12,7 +12,7 @@ Labs are prioritized by real-world bug bounty findability, not CVSS severity. Cr
 
 ## About me
 
-I'm Prince — a self-taught offensive security professional based in Mumbai, eJPT certified, working towards bug bounty hunting and entry-level VAPT roles. This repo documents my structured journey through every PortSwigger Web Academy topic, alongside writeups capturing what I learn and how it maps to real-world vulnerabilities.
+I'm Prince — a self-taught offensive security professional, eJPT certified, working towards bug bounty hunting and entry-level VAPT roles. This repo documents my structured journey through every PortSwigger Web Academy topic, alongside writeups capturing what I learn and how it maps to real-world vulnerabilities.
 
 ## Writeups
 
