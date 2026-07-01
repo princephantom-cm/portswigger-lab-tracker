@@ -18,10 +18,10 @@ I'm Prince — a self-taught offensive security professional, eJPT certified, wo
 
 Topic-wise notes on patterns, key learnings, and real-world relevance — added as topics are completed. Linked items below are live; the rest will be linked as each topic is finished.
 
-- [Access Control & IDOR](writeups/access-control.md) ✅
+- [Access Control & IDOR](writeups/Access-control.md) ✅
 - [Business Logic Vulnerabilities](writeups/Business-Logic-Vulnerabilities.md) ✅
-- [SSRF](writeups/ssrf.md) ✅
-- [Authentication](writeups/authentication.md) ✅
+- [SSRF](writeups/SSRF.md) ✅
+- [Authentication](writeups/Authentication.md) ✅
 - API Testing
 - Race Conditions
 - CSRF
