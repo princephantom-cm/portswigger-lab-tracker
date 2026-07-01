@@ -22,7 +22,7 @@ Topic-wise notes on patterns, key learnings, and real-world relevance — added 
 - [Business Logic Vulnerabilities](writeups/Business-Logic-Vulnerabilities.md) ✅
 - [SSRF](writeups/SSRF.md) ✅
 - [Authentication](writeups/Authentication.md) ✅
-- API Testing
+- [API Testing](wrietups/API-Testing.md) ✅
 - Race Conditions
 - CSRF
 - XSS
