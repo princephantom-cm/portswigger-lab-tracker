@@ -6,7 +6,7 @@ Tracking my progress through all PortSwigger Web Academy labs (252 labs) as part
 
 ## Progress
 
-**Completed: 31 / 252**
+**Completed: 50 / 252**
 
 Labs are prioritized by real-world bug bounty findability, not CVSS severity. Critical and High priority topics (Access Control, Business Logic, SSRF, Authentication, API Testing, CSRF, XSS, File Upload) are tackled first.
 
@@ -21,7 +21,7 @@ Topic-wise notes on patterns, key learnings, and real-world relevance — added 
 - [Access Control & IDOR](writeups/access-control.md) ✅
 - [Business Logic Vulnerabilities](writeups/Business-Logic-Vulnerabilities.md) ✅
 - [SSRF](writeups/ssrf.md) ✅
-- Authentication
+- [Authentication](writeups/authentication.md) ✅
 - API Testing
 - Race Conditions
 - CSRF
