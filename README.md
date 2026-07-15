@@ -23,8 +23,8 @@ Topic-wise notes on patterns, key learnings, and real-world relevance — added 
 - [SSRF](writeups/SSRF.md) ✅
 - [Authentication](writeups/Authentication.md) ✅
 - [API Testing](writeups/API-Testing.md) ✅
-- Race Conditions
-- CSRF
+- [Race Conditions](writeups/Race-Conditions.md) ✅
+- [CSRF](writeups/CSRF.md) ✅
 - XSS
 - File Upload
 - CORS
