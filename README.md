@@ -6,7 +6,7 @@ Tracking my progress through all PortSwigger Web Academy labs (252 labs) as part
 
 ## Progress
 
-**Completed: 50 / 252**
+**Completed: 64 / 252**
 
 Labs are prioritized by real-world bug bounty findability, not CVSS severity. Critical and High priority topics (Access Control, Business Logic, SSRF, Authentication, API Testing, CSRF, XSS, File Upload) are tackled first.
 
